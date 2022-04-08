@@ -4,13 +4,14 @@ const router = express.Router()
 
 const {auth} = require("../midlewere/auth")
 
-const {register,login} = require("../controllers/auth")
+const {register,login,checkAuth} = require("../controllers/auth")
 const {creteGroupLink,getGroups,getGroup,editGroup,deleteGroup} = require("../controllers/groupLink")
 const {addLink,editLink,getLinks} = require("../controllers/link")
 const {uploadFile} = require("../midlewere/uploadFile")
 
 router.post("/register",register)
-router.get("/login",login)
+router.post("/login",login)
+router.get("/checkauth",auth,checkAuth)
 
 router.post("/grouplink",auth,uploadFile("image"),creteGroupLink)
 router.get("/grouplink",auth,getGroups)

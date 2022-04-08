@@ -1,7 +1,7 @@
 const {user}= require('../../models')
 const joi = require("joi")
 const bcrypt = require("bcrypt")
-const jwt = require("jsonwebtoken")
+const jwt = require("jsonwebtoken") 
 
 exports.register= async (req,res)=>{
 
@@ -56,7 +56,7 @@ exports.register= async (req,res)=>{
             message:"server error"
         })
     }
-}
+} 
 
 exports.login= async (req,res)=>{
 
@@ -116,6 +116,42 @@ exports.login= async (req,res)=>{
     } catch (error) {
         console.log(error)
         res.status(500).send({
+            status:"failed",
+            message:"server error"
+        })
+    }
+}
+
+exports.checkAuth = async(req,res)=>{
+    try {
+        const id = req.user.id
+        const dataUser = await user.findOne({
+            where:{
+                id:id
+            },
+            attributes:{
+                exclude:["createdAt","updatedAt","password"]
+            }
+        })
+
+        if(!dataUser){
+            return res.status(404).send({
+                status:"failed"
+            })
+        } 
+
+        res.send({
+            status:"success",
+                user:{
+                    id: dataUser.id,
+                    name: dataUser.fullName,
+                    email: dataUser.email,
+                }
+        })
+        
+    } catch (error) {
+        console.log(error);
+        res.send({
             status:"failed",
             message:"server error"
         })
