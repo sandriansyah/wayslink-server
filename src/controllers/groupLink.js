@@ -37,7 +37,7 @@ exports.creteGroupLink = async(req,res)=>{
 exports.getGroups = async (req,res)=>{
     try {
         
-        const getData = await groupLink.findAll({
+        let getData = await groupLink.findAll({
             where:{
                 idUser: req.user.id
             },attributes:{
@@ -50,6 +50,18 @@ exports.getGroups = async (req,res)=>{
                 }
             }
         })
+
+        getData = JSON.parse(JSON.stringify(getData))
+
+        const path = "http://localhost:5000/uploads/"
+
+        getData = getData.map((data)=>{
+            return{
+                ...data,
+                image: path + data.image,
+            }
+        })
+
 
         res.send({
             status:"success",
