@@ -1,6 +1,7 @@
 const req = require('express/lib/request');
 const res = require('express/lib/response');
 
+
 const {groupLink,link} = require('../../models')
 
 exports.creteGroupLink = async(req,res)=>{
@@ -10,7 +11,8 @@ exports.creteGroupLink = async(req,res)=>{
         const createGroup= await groupLink.create({
             ...data,
             image: req.file.filename,
-            idUser: req.user.id
+            idUser: req.user.id,
+            viewCount: 0,
         })
 
         const dataGroup = await groupLink.findOne({
@@ -82,9 +84,9 @@ exports.getGroup = async (req,res)=>{
 
         const {id} = req.params
 
-        const getData = await groupLink.findOne({
+        let getData = await groupLink.findOne({
             where:{
-                id: id
+                uniqueLink: id
             },attributes:{
                 exclude:["createdAt","updatedAt"]
             },include:{
@@ -95,6 +97,13 @@ exports.getGroup = async (req,res)=>{
                 }
             }
         })
+
+        getData = JSON.parse(JSON.stringify(getData))
+        const path = "http://localhost:5000/uploads/"
+        getData = {
+            ...getData,
+            image: path + getData.image
+        }
 
         res.send({
             status:"success",
@@ -111,20 +120,32 @@ exports.getGroup = async (req,res)=>{
 }
 
 exports.editGroup = async (req,res)=>{
+    const {id} = req.params
+    const dataEdit = req.body
     try {
 
-        const {id} = req.params
-        const dataEdit = req.body
-
-        const getData = await groupLink.update(dataEdit,{
+        const getData = await groupLink.update({
+            ...dataEdit,
+            image : req.file.filename
+        },{
             where:{
                 id: id
             }
         })
 
+        const finding = await groupLink.findOne({
+            where:{
+                id: id
+            },
+            attributes:{
+                exclude:["createdAt","updatedAt"]
+            }
+
+        })
+
         res.send({
             status:"success",
-            getData
+            finding
         })
 
     } catch (error) {
@@ -152,6 +173,36 @@ exports.deleteGroup = async (req,res)=>{
             getData
         })
 
+    } catch (error) {
+        console.log(error);
+        res.send({
+            status:"failed",
+            message:"server error"
+        })
+    }
+}
+
+exports.viewAcount =async (req,res)=>{
+    try {
+        const {id} = req.params
+        const findData = await groupLink.findOne({
+            where:{
+                id: id
+            }
+        })
+        console.log(findData.viewCount);
+        const addView = {
+            viewCount: findData.viewCount + 1}
+        const data = await groupLink.update(addView,{
+            where:{
+                id:id
+            }
+        })
+
+        res.send({
+            status:"success",
+            data
+        })
     } catch (error) {
         console.log(error);
         res.send({

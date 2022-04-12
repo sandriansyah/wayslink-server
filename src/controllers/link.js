@@ -1,4 +1,5 @@
 const {link} = require('../../models')
+const { patch } = require('../routes')
 
 exports.addLink = async (req,res)=>{
     try {
@@ -31,14 +32,25 @@ exports.addLink = async (req,res)=>{
 
 exports.getLinks = async (req,res)=>{
     try {
-        const {idGroup} = req.body
-        const dataAdd = await link.findAll({
+        const {id} = req.params
+        console.log(id);
+        let dataAdd = await link.findAll({
             where:{
-                idGroup: idGroup
+                idGroup: id
             },attributes:{
                 exclude:["createdAt","updatedAt"]
             }
         })
+
+        // dataAdd = JSON.parse(JSON.stringify(dataAdd))
+
+        // const path = "http://localhost:5000/uploads/"
+        // dataAdd = dataAdd.map((item)=>{
+        //     return{
+        //         ...item,
+        //         imageLink: path + item.imageLink
+        //     }
+        // })
 
         res.send({
             status:"success",
@@ -57,7 +69,11 @@ exports.editLink = async (req,res)=>{
     try {
         const {id} = req.params
         const data = req.body 
-        const editLink = await link.update(data,{
+        console.log(req.file);
+        const editLink = await link.update({
+            ...data,
+            imageLink: req.file.filename,
+        },{
             where: {
                 id:id
             }
@@ -66,6 +82,28 @@ exports.editLink = async (req,res)=>{
         res.send({
             status:"success",
             editLink
+        })
+    } catch (error) {
+        console.log(error);
+        res.send({
+            status:"faild",
+            message:"server error"
+        })
+    }
+}
+
+exports.deleteLink = async (req,res)=>{
+    try {
+        const {id} = req.params 
+        const delLink = await link.destroy({
+            where: {
+                id:id
+            }
+        })
+
+        res.send({
+            status:"success",
+            delLink
         })
     } catch (error) {
         console.log(error);
